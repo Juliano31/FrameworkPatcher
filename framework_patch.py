@@ -16,7 +16,6 @@ def modify_file(file_path):
     in_method = False
     method_type = None
     method_start_line = ""
-    original_registers_line = ""
 
     method_patterns = {
         "checkCapability": re.compile(r'\.method.*checkCapability\(.*\)Z'),
@@ -28,20 +27,16 @@ def modify_file(file_path):
 
     for line in lines:
         if in_method:
-            if line.strip().startswith('.registers'):
-                original_registers_line = line
-                continue
-
             if line.strip() == '.end method':
                 modified_lines.append(method_start_line)
                 if method_type == "checkCapability":
                     logging.info(f"Modifying method body for {method_type}")
-                    modified_lines.append(original_registers_line)
+                    modified_lines.append("    .registers 4\n")
                     modified_lines.append("    const/4 v0, 0x1\n")
                     modified_lines.append("    return v0\n")
                 elif method_type == "checkCapabilityRecover":
                     logging.info(f"Modifying method body for {method_type}")
-                    modified_lines.append(original_registers_line)
+                    modified_lines.append("    .registers 4\n")
                     modified_lines.append("    .annotation system Ldalvik/annotation/Throws;\n")
                     modified_lines.append("        value = {\n")
                     modified_lines.append("            Ljava/security/cert/CertificateException;\n")
@@ -51,17 +46,16 @@ def modify_file(file_path):
                     modified_lines.append("    return v0\n")
                 elif method_type == "hasAncestorOrSelf":
                     logging.info(f"Modifying method body for {method_type}")
-                    modified_lines.append(original_registers_line)
+                    modified_lines.append("    .registers 6\n")
                     modified_lines.append("    const/4 v0, 0x1\n")
                     modified_lines.append("    return v0\n")
                 elif method_type == "getMinimumSignatureSchemeVersionForTargetSdk":
                     logging.info(f"Modifying method body for {method_type}")
-                    modified_lines.append(original_registers_line)
+                    modified_lines.append("    .registers 2\n")
                     modified_lines.append("    const/4 v0, 0x0\n")
                     modified_lines.append("    return v0\n")
                 in_method = False
                 method_type = None
-                original_registers_line = ""
             else:
                 continue
 
